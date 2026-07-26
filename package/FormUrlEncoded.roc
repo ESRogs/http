@@ -59,7 +59,7 @@ FormUrlEncoded := [].{
 			['+', .. as rest] => decode_bytes(rest, acc.append(' '))
 			['%', hi, lo, .. as rest] =>
 				match (hex_value(hi), hex_value(lo)) {
-					(Ok(h), Ok(l)) => decode_bytes(rest, acc.append(h.shift_left_by(4).bitwise_or(l)))
+					(Ok(h), Ok(l)) => decode_bytes(rest, acc.append(h.shl_wrap(4).bitwise_or(l)))
 					# malformed escape: emit '%' literally and continue from hi
 					_ => decode_bytes([hi, lo].concat(rest), acc.append('%'))
 				}
@@ -74,7 +74,7 @@ FormUrlEncoded := [].{
 		} else if b == ' ' {
 			acc.append('+')
 		} else {
-			acc.append('%').append(hex_digit(b.shift_right_by(4))).append(hex_digit(b.bitwise_and(15)))
+			acc.append('%').append(hex_digit(b.shr_wrap(4))).append(hex_digit(b.bitwise_and(15)))
 		}
 
 	## The WHATWG urlencoded serializer leaves these bytes bare: A-Z a-z 0-9 * - . _
